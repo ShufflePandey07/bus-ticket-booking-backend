@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
-//  Configuring the dotenv to use the environment variables
 dotenv.config();
 
 const connectDatabase = () => {
@@ -10,5 +9,4 @@ const connectDatabase = () => {
   });
 };
 
-//  Exporting the function
 module.exports = connectDatabase;

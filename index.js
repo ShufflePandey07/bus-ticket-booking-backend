@@ -1,9 +1,7 @@
-// Importing required packages
 const express = require("express");
 const connectDatabase = require("./database/database");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const acceptFormdata = require("express-fileupload");
 const morgan = require("morgan");
 
 // Load environment variables
@@ -13,20 +11,15 @@ dotenv.config();
 const app = express();
 
 // Configure CORS
-const corsOptions = {
-  origin: true,
-  credentials: true,
-  optionSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
+app.use(cors({ origin: true, credentials: true }));
 app.use(morgan("dev"));
-
-// Configure form data handling
-app.use(acceptFormdata());
+app.use(express.json());
 
 // Connect to database
 connectDatabase();
+
+// Define routes
+app.use("/api/user", require("./routes/userRoutes"));
 
 // Define port
 const PORT = process.env.PORT || 5000;
