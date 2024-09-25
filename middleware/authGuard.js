@@ -1,95 +1,105 @@
 const jwt = require("jsonwebtoken");
-const authGuard = (req, res, next) => {
-  // check incoming data
-  console.log(req.headers); //pass
 
-  // get authorization data from headers
+// Middleware to protect routes and ensure user authentication
+const authGuard = (req, res, next) => {
+  // Log incoming request headers for debugging purposes
+  console.log(req.headers);
+
+  // Extract the 'authorization' header from the request
   const authHeader = req.headers.authorization;
 
-  // check or validate
+  // If the 'authorization' header is missing, send an error response
   if (!authHeader) {
     return res.status(400).json({
       success: false,
-      message: "Auth header is missing",
+      message: "Authorization header is missing",
     });
   }
 
-  // Split the data (Format : 'Bearer token-joyboy') -> only token
+  // Extract the token from the 'Bearer <token>' format
   const token = authHeader.split(" ")[1];
 
-  // if token is not found : stop the process (res)
+  // If the token is not provided or empty, send an error response
   if (!token || token === "") {
     return res.status(400).json({
       success: false,
-      message: "Please provide a token",
+      message: "Token is missing or empty",
     });
   }
 
-  // if token is found then verify
+  // Verify the token using JWT and the secret key
   try {
-    const decodeUserData = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decodeUserData; //user info : id onlyf
+    const decodedUserData = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Attach decoded user information to the request object (e.g., user id)
+    req.user = decodedUserData;
+
+    // Call the next middleware function or controller
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
+
+    // If token verification fails, send an authentication error
     return res.status(400).json({
       success: false,
-      message: "Not Authenticated",
+      message: "Invalid or expired token",
     });
   }
-
-  // if verified : next (function in controller)
-  // if not verified : not auth
 };
 
-// Admin guard
+// Middleware to protect routes that require admin privileges
 const adminGuard = (req, res, next) => {
-  // check incoming data
-  console.log(req.headers); //pass
+  // Log incoming request headers for debugging purposes
+  console.log(req.headers);
 
-  // get authorization data from headers
+  // Extract the 'authorization' header from the request
   const authHeader = req.headers.authorization;
 
-  // check or validate
+  // If the 'authorization' header is missing, send an error response
   if (!authHeader) {
     return res.status(400).json({
       success: false,
-      message: "Auth header is missing",
+      message: "Authorization header is missing",
     });
   }
 
-  // Split the data (Format : 'Bearer token-joyboy') -> only token
+  // Extract the token from the 'Bearer <token>' format
   const token = authHeader.split(" ")[1];
 
-  // if token is not found : stop the process (res)
+  // If the token is not provided or empty, send an error response
   if (!token || token === "") {
     return res.status(400).json({
       success: false,
-      message: "Please provide a token",
+      message: "Token is missing or empty",
     });
   }
 
-  // if token is found then verify
+  // Verify the token using JWT and the secret key
   try {
-    const decodeUserData = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decodeUserData; // id, isadmin
+    const decodedUserData = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Attach decoded user information to the request object
+    req.user = decodedUserData;
+
+    // Check if the user has admin privileges
     if (!req.user.isAdmin) {
-      return res.status(400).json({
+      return res.status(403).json({
         success: false,
-        message: "Permission Denied",
+        message: "Access denied: Admins only",
       });
     }
+
+    // Call the next middleware function or controller
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
+
+    // If token verification fails, send an authentication error
     return res.status(400).json({
       success: false,
-      message: "Not Authenticated",
+      message: "Invalid or expired token",
     });
   }
-
-  // if verified : next (function in controller)
-  // if not verified : not auth
 };
 
 module.exports = {
